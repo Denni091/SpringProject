@@ -23,7 +23,7 @@ public class SpringConfiguration {
     @Bean
     @Scope("prototype")
     public User getUser() {
-        return new User("Maksim", "Zeider", 25);
+        return new User(3,"Maksim", "Zeider","maksim@gmail.com","0997652312", 25);
     }
 
     @Bean
