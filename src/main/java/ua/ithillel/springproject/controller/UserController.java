@@ -1,35 +1,54 @@
 package ua.ithillel.springproject.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.ithillel.springproject.controller.dto.IntegerDto;
+import ua.ithillel.springproject.controller.dto.UserDto;
+import ua.ithillel.springproject.controller.mapper.UserMapper;
 import ua.ithillel.springproject.entity.User;
 import ua.ithillel.springproject.service.UserService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @GetMapping
-    public List<User> getAll() {
-        return userService.getAll();
+    public ResponseEntity<List<UserDto>> getAll() {
+        return new ResponseEntity<>(userService.getAll().
+                stream().
+                map(userMapper::toDto).
+                collect(Collectors.toList()),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable Integer id) {
-        return userService.getById(id);
+    public ResponseEntity<UserDto> getById(@PathVariable Integer id) {
+        User byId = userService.getById(id);
+        return ResponseEntity.ok(userMapper.toDto(byId));
     }
 
     @GetMapping("/{email}/{phone}")
-    public List<User> getEmailAndPhone(@PathVariable String email, @PathVariable String phone) {
-        return userService.getEmailAndPhone(email, phone);
+    public ResponseEntity<List<UserDto>> getEmailAndPhone(@PathVariable String email, @PathVariable String phone) {
+        return new ResponseEntity<>(userService.getEmailAndPhone(email, phone).
+                stream().
+                map(userMapper::toDto).
+                collect(Collectors.toList()),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/filter")
@@ -42,13 +61,25 @@ public class UserController {
     }
 
     @PostMapping
-    public User save(@RequestBody User user) {
-        return userService.save(user);
+    public ResponseEntity<UserDto> save(@RequestBody UserDto userDto) {
+        return new ResponseEntity<>(userMapper.toDto(userService.save(userMapper.toEntity(userDto))),
+                HttpStatus.CREATED
+        );
     }
 
-    @PutMapping("/{id}")
-    public User update(@PathVariable Integer id, @RequestBody User user) {
-        return userService.update(id, user);
+    @PutMapping
+    public ResponseEntity<UserDto> update(@RequestBody UserDto userDto) {
+        return new ResponseEntity<>(
+                userMapper.toDto(userService.update(userMapper.toEntity(userDto))),
+                HttpStatus.ACCEPTED
+        );
+    }
+
+    @PutMapping("/{email}/{id}")
+    public ResponseEntity<IntegerDto> updateEmailById(@PathVariable String email, @PathVariable Integer id) {
+        return new ResponseEntity<>(new IntegerDto(userService.updateEmailById(email, id)),
+                HttpStatus.OK
+        );
     }
 
     @DeleteMapping

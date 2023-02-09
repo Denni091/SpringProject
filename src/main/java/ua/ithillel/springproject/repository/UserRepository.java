@@ -1,60 +1,21 @@
 package ua.ithillel.springproject.repository;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Repository;
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import ua.ithillel.springproject.entity.User;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Repository
-public class UserRepository {
-    private final List<User> users = new ArrayList<>();
+public interface UserRepository extends JpaRepository<User, Integer> {
 
-    @PostConstruct
-    public void init() {
-        users.add(new User(0, "Den", "TI", "den@gmail.com", "0975672897", 26));
-        users.add(new User(1, "Bob", "AM", "bob@gmail.com", "0992756543", 21));
-    }
+    List<User> getUserByEmailAndPhone(String email, String phone);
 
-    public List<User> getAll() {
-        return users;
-    }
+    List<User> getUserByNameOrSurnameOrPhone(String name, String Surname, String Phone);
 
-    public User getById(Integer id) {
-        return users.get(id);
-    }
-
-    public List<User> getEmailAndPhone(String email, String phone) {
-        return users.stream().
-                filter(user -> email.equals(user.getEmail()) && phone.equals(user.getPhone())).
-                collect(Collectors.toList());
-    }
-
-    public List<User> getUserByFilter(String name, String surname, String email) {
-        return users.stream().filter(user -> user.getName().equals(name) || user.getSurname().equals(surname)
-                || user.getEmail().equals(email)).collect(Collectors.toList());
-    }
-
-    public User save(User user) {
-        users.add(user);
-        user.setId(users.size());
-        return user;
-    }
-
-    public User update(Integer id, User user) {
-        User oldUser = users.get(id);
-        oldUser.setName(user.getName());
-        oldUser.setSurname(user.getSurname());
-        oldUser.setAge(user.getAge());
-        oldUser.setEmail(user.getEmail());
-        oldUser.setPhone(user.getPhone());
-        return users.get(id);
-    }
-
-    public Integer delete(int id) {
-        users.remove(id);
-        return id;
-    }
+    @Transactional
+    @Modifying
+    @Query("update User u set u.email = ?1 where u.id = ?2")
+    Integer updateEmailUserById(String email, Integer id);
 }

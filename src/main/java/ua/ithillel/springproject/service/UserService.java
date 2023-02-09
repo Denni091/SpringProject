@@ -9,6 +9,7 @@ import java.util.List;
 
 @Service
 public class UserService {
+    //    private final FakeUserRepository fakeUserRepository;
     private final UserRepository userRepository;
 
     @Autowired
@@ -17,31 +18,36 @@ public class UserService {
     }
 
     public List<User> getAll() {
-        return userRepository.getAll();
+        return userRepository.findAll();
     }
 
 
     public User getById(Integer id) {
-        return userRepository.getById(id);
+        return userRepository.findById(id).orElseThrow();
     }
 
     public List<User> getEmailAndPhone(String email, String phone) {
-        return userRepository.getEmailAndPhone(email, phone);
+        return userRepository.getUserByEmailAndPhone(email, phone);
     }
 
     public List<User> getUserByFilter(String name, String surname, String email) {
-        return userRepository.getUserByFilter(name, surname, email);
+        return userRepository.getUserByNameOrSurnameOrPhone(name, surname, email);
     }
 
     public User save(User user) {
         return userRepository.save(user);
     }
 
-    public User update(Integer id, User user) {
-        return userRepository.update(id, user);
+    public User update(User user) {
+        return userRepository.save(user);
+    }
+
+    public Integer updateEmailById(String email, Integer id) {
+        return userRepository.updateEmailUserById(email, id);
     }
 
     public Integer delete(Integer id) {
-        return userRepository.delete(id);
+        userRepository.deleteById(id);
+        return id;
     }
 }
